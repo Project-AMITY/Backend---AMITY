@@ -37,20 +37,16 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
-        // 1. Check if email exists
         if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already in use!");
         }
 
-        // 2. Encode the raw password from the request
         user.setPassword(encoder.encode(user.getPassword()));
 
-        // 3. Set default role if not provided (using your Enum)
         if (user.getRole() == null) {
             user.setRole(Role.USER);
         }
 
-        // 4. Save the user to MySQL
         userRepository.save(user);
 
         return ResponseEntity.ok("User registered successfully!");
@@ -58,7 +54,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        // 1. Authenticate using email and password
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
@@ -66,17 +61,13 @@ public class AuthController {
                 )
         );
 
-        // 2. Update Security Context
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 3. Generate JWT Token
         String jwt = jwtUtils.generateToken(authentication);
 
-        // 4. Get User object from authentication principal
-        // Since your User entity implements UserDetails, we cast directly to User
+
         User user = (User) authentication.getPrincipal();
 
-        // 5. Return Response
         return ResponseEntity.ok(new JwtResponse(
                 jwt,
                 user.getEmail(),
