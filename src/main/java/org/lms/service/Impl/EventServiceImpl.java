@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.lms.dto.EventDto;
 import org.lms.entity.Event;
 import org.lms.entity.User;
+import org.lms.exception.EventNotFoundException;
 import org.lms.exception.UnauthorizedAccessException;
 import org.lms.repository.EventRepository;
 import org.lms.repository.UserRepository;
 import org.lms.service.EventService;
 import org.lms.utill.Role;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +33,51 @@ public class EventServiceImpl implements EventService {
         return mapper.map(savedEvent,EventDto.class);
     }
 
+    @Override
+    public EventDto updateEvent(Long id, EventDto dto) {
+        User user = getCurrentUser();
+        Event event = findEventById(id);
+
+        ensureOwnerOrAdmin(user, event);
+
+        //updateEntity(event, dto);
+        Event updatedEvent = eventRepository.save(event);
+
+        return mapper.map(updatedEvent,EventDto.class);
+    }
+
+    @Override
+    public void deleteEvent(Long id) {
+        User user = getCurrentUser();
+        Event event = findEventById(id);
+
+        ensureOwnerOrAdmin(user, event);
+        eventRepository.delete(event);
+    }
+
+    @Override
+    public Page<EventDto> getAllEvents(Pageable pageable) {
+        return eventRepository.findAll(pageable)
+                .map(event -> mapper.map(event, EventDto.class));
+    }
+
+    @Override
+    public EventDto getEventById(Long id) {
+        return mapper.map(findEventById(id), EventDto.class);
+    }
+
+    @Override
+    public Page<EventDto> getEventsByCategory(String category, Pageable pageable) {
+            return eventRepository.findByCategory(category, pageable)
+                    .map(event -> mapper.map(event, EventDto.class));
+    }
+
+    @Override
+    public Page<EventDto> getEventsByUniversity(String university, Pageable pageable) {
+        return eventRepository.findByUniversity(university, pageable)
+                .map(event -> mapper.map(event, EventDto.class));
+    }
+
     /* ================= HELPERS ================= */
 
     public User getCurrentUser() {
@@ -47,5 +95,20 @@ public class EventServiceImpl implements EventService {
         if (user.getRole() != Role.ADMIN && user.getRole() != Role.SUPER_ADMIN) {
             throw new UnauthorizedAccessException("Only admins can create events");
         }
+    }
+
+    public void ensureOwnerOrAdmin(User user, Event event) {
+        boolean isOwner = event.getCreatedBy().getId().equals(user.getId());
+        boolean isAdmin = user.getRole() == Role.ADMIN || user.getRole() == Role.SUPER_ADMIN;
+
+        if (!isOwner && !isAdmin) {
+            throw new UnauthorizedAccessException("Unauthorized to modify this event");
+        }
+    }
+
+    public Event findEventById(Long id) {
+        return eventRepository.findById(id)
+                .orElseThrow(() ->
+                        new EventNotFoundException("Event not found with id: " + id));
     }
 }
