@@ -53,7 +53,8 @@ public class Event {
     @Column(nullable = false)
     private LocalTime eventTime;
 
-    private String meetingLink;
+    @Column(nullable = false)
+    private String contactlink;
 
     @Column(nullable = false)
     private String fee;
