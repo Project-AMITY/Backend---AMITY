@@ -40,10 +40,11 @@ public class EventServiceImpl implements EventService {
 
         ensureOwnerOrAdmin(user, event);
 
-        //updateEntity(event, dto);
+         updateEntity(event, dto);
         Event updatedEvent = eventRepository.save(event);
 
-        return mapper.map(updatedEvent,EventDto.class);
+
+        return mapper.map(updatedEvent, EventDto.class);
     }
 
     @Override
@@ -98,8 +99,10 @@ public class EventServiceImpl implements EventService {
     }
 
     public void ensureOwnerOrAdmin(User user, Event event) {
-        boolean isOwner = event.getCreatedBy().getId().equals(user.getId());
         boolean isAdmin = user.getRole() == Role.ADMIN || user.getRole() == Role.SUPER_ADMIN;
+
+        boolean isOwner = event.getCreatedBy() != null
+                && event.getCreatedBy().getId().equals(user.getId());
 
         if (!isOwner && !isAdmin) {
             throw new UnauthorizedAccessException("Unauthorized to modify this event");
@@ -110,5 +113,20 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findById(id)
                 .orElseThrow(() ->
                         new EventNotFoundException("Event not found with id: " + id));
+    }
+
+    public void updateEntity(Event event, EventDto dto) {
+        event.setTitle(dto.getTitle());
+        event.setImage(dto.getImage());
+        event.setDescription(dto.getDescription());
+        event.setHighlight(dto.getHighlight());
+        event.setUniversity(dto.getUniversity());
+        event.setOrganizer(dto.getOrganizer());
+        event.setCategory(dto.getCategory());
+        event.setEventType(dto.getEventType());
+        event.setEventDate(dto.getEventDate());
+        event.setEventTime(dto.getEventTime());
+        event.setContactlink(dto.getContactlink());
+        event.setFee(dto.getFee());
     }
 }

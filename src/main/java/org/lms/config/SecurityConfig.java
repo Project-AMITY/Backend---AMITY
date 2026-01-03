@@ -62,7 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // Allow GET requests for events to everyone (even without token)
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/events/**").permitAll()
+                        .requestMatchers("/api/event/**").permitAll()
                         // All other requests (POST, PUT, DELETE) require authentication
                         // The @PreAuthorize in your Controller will then check for ADMIN/SUPER_ADMIN
                         .anyRequest().authenticated()
@@ -83,4 +83,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }
