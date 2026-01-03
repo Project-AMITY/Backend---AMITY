@@ -6,7 +6,6 @@ import org.lms.dto.UserDto;
 import org.lms.service.Impl.UserServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -21,8 +20,6 @@ public class UserController {
         return ResponseEntity.ok(userServiceImpl.getProfile());
     }
 
-
-
     @PostMapping("/subscribe")
     public ResponseEntity<String> subscribe() {
         userServiceImpl.subscribe();
@@ -34,7 +31,6 @@ public class UserController {
         userServiceImpl.unsubscribe();
         return ResponseEntity.ok("Unsubscribed");
     }
-
 
     @GetMapping("/favorites")
     public ResponseEntity<List<EventDto>> getFavorites() {

@@ -9,6 +9,7 @@ import org.lms.exception.UnauthorizedAccessException;
 import org.lms.repository.EventRepository;
 import org.lms.repository.UserRepository;
 import org.lms.service.EventService;
+import org.lms.utill.EventType;
 import org.lms.utill.Role;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -40,10 +41,10 @@ public class EventServiceImpl implements EventService {
 
         ensureOwnerOrAdmin(user, event);
 
-        //updateEntity(event, dto);
+        updateEntity(event, dto);
         Event updatedEvent = eventRepository.save(event);
 
-        return mapper.map(updatedEvent,EventDto.class);
+        return mapper.map(updatedEvent, EventDto.class);
     }
 
     @Override
@@ -78,7 +79,11 @@ public class EventServiceImpl implements EventService {
                 .map(event -> mapper.map(event, EventDto.class));
     }
 
-    /* ================= HELPERS ================= */
+    @Override
+    public Page<EventDto> getEventByEventType(EventType eventType, Pageable pageable) {
+        return eventRepository.findByEventType(eventType,pageable)
+                .map(event -> mapper.map(event,EventDto.class));
+    }
 
     public User getCurrentUser() {
         String email = SecurityContextHolder
@@ -86,7 +91,7 @@ public class EventServiceImpl implements EventService {
                 .getAuthentication()
                 .getName();
 
-        return (User) userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new UnauthorizedAccessException("Authenticated user not found"));
     }
@@ -98,8 +103,10 @@ public class EventServiceImpl implements EventService {
     }
 
     public void ensureOwnerOrAdmin(User user, Event event) {
-        boolean isOwner = event.getCreatedBy().getId().equals(user.getId());
         boolean isAdmin = user.getRole() == Role.ADMIN || user.getRole() == Role.SUPER_ADMIN;
+
+        boolean isOwner = event.getCreatedBy() != null
+                && event.getCreatedBy().getId().equals(user.getId());
 
         if (!isOwner && !isAdmin) {
             throw new UnauthorizedAccessException("Unauthorized to modify this event");
@@ -110,5 +117,20 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findById(id)
                 .orElseThrow(() ->
                         new EventNotFoundException("Event not found with id: " + id));
+    }
+
+    public void updateEntity(Event event, EventDto dto) {
+        event.setTitle(dto.getTitle());
+        event.setImage(dto.getImage());
+        event.setDescription(dto.getDescription());
+        event.setHighlight(dto.getHighlight());
+        event.setUniversity(dto.getUniversity());
+        event.setOrganizer(dto.getOrganizer());
+        event.setCategory(dto.getCategory());
+        event.setEventType(dto.getEventType());
+        event.setEventDate(dto.getEventDate());
+        event.setEventTime(dto.getEventTime());
+        event.setContactlink(dto.getContactlink());
+        event.setFee(dto.getFee());
     }
 }

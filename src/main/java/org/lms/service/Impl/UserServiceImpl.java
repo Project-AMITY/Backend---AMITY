@@ -6,21 +6,16 @@ import org.lms.dto.UserDto;
 import org.lms.entity.Event;
 import org.lms.entity.User;
 import org.lms.exception.EventNotFoundException;
-import org.lms.exception.UnauthorizedAccessException;
 import org.lms.exception.UserNotFoundException;
 import org.lms.repository.EventRepository;
 import org.lms.repository.UserRepository;
-import org.lms.utill.Role;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequestMapping
 @RequiredArgsConstructor
 public class UserServiceImpl {
 
@@ -69,6 +64,4 @@ public class UserServiceImpl {
         user.getFavorites().remove(event);
         userRepository.save(user);
     }
-
-
 }

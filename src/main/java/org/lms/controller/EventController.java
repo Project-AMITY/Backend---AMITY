@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.lms.dto.EventDto;
 import org.lms.service.EventService;
+import org.lms.utill.EventType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -58,5 +59,13 @@ public class EventController {
             @PathVariable String university,
             @PageableDefault(size = 10) Pageable pageable) {
         return ResponseEntity.ok(eventService.getEventsByUniversity(university, pageable));
+    }
+
+    @GetMapping("/university/{event_type}")
+    public ResponseEntity<Page<EventDto>> getEventByEventType(
+            @PathVariable EventType eventType,
+            @PageableDefault(size = 10) Pageable pageable
+            ){
+        return ResponseEntity.ok(eventService.getEventByEventType(eventType,pageable));
     }
 }

@@ -27,7 +27,7 @@ public class Event {
     private String title;
 
     @Column(nullable = false)
-    private String image;  // URL or path to image
+    private String image;
 
     @Column(nullable = false)
     private String description;
